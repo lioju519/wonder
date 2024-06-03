@@ -1,0 +1,75 @@
+{% if session['usuario'] %}
+   
+{% else %}
+    <script>window.location.href = "{{ url_for('sesion.login') }}";</script>
+{% endif %}
+
+
+{% extends "layout.html" %} 
+
+{% block content %} 
+
+<div class="container">
+  <div class="row">
+    <h3>Modulo Excepciones</h3><br><br><br><br>
+    <div class="col-lg-6">
+      
+      <form action="/guardar" method="POST">
+        <div class="mb-3">
+          <label for="sku_indivisible" class="form-label">SKU INDIVISIBLE</label>
+          <input type="text" class="form-control" id="sku_indivisible" name="sku_indivisible">
+        </div>
+        <div class="mb-3">
+          <label for="precio" class="form-label">PRECIO</label>
+          <input type="number" step="0.05" class="form-control" id="precio" name="precio">
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar Excepción</button>
+        {% with messages =  get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <p>{{ message }}</p>
+            {% endfor %}
+            {% endif %}
+        {% endwith %}
+      </form>
+    </div>
+
+    <div class="col-lg-6 text-center">
+      <h5>Tabla con exepciones</h5>
+      <table class="table table-bordered table-hover" id="myTable">
+        <thead>
+          <tr>
+            
+            <th scope="col">SKU INDIVISIBLE</th>
+            <th scope="col">COSTE</th>
+            <th scope="col">FECHA</th>
+            <th scope="col">USUARIO</th>
+            <th scope="col">ELIMINAR</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+             {%  for data_precios in data_precios %}
+             <tr>
+               <td>{{ data_precios.1}}</td>
+               <td>{{ data_precios.2}}</td>
+               <td>{{ data_precios.3}}</td>
+               <td>{{ data_precios.4}}</td>
+               <td><a href="/deleteIemPrecio/{{data_precios.0}}">Eliminar</a></td>
+               
+               
+             </tr>
+    
+            {% endfor %}
+          
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+ 
+
+</div>
+
+
+{% endblock %}

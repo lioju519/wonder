@@ -1,0 +1,99 @@
+{% if session['usuario'] %}
+   
+{% else %}
+    <script>window.location.href = "{{ url_for('sesion.login') }}";</script>
+{% endif %}
+
+{% with messages =  get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+    <p>{{ message }}</p>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+{% extends "layout.html" %} 
+
+{% block content %} 
+
+<div class="container"><br>
+    <!--{{ all_skus }}
+    {{ data_historial_lotes }}-->
+    <div class="row">
+        <div class="col-lg-12">
+          <div class="table-responsive">
+          <table class="table table-bordered table-hover text-center" id="myTable" text-center>
+            <thead>
+              <tr>
+                <th scope="col">SKU INDIVISIBLE</th>
+                <th scope="col">FECHA_VENCIMIENTO</th>
+                <th scope="col">CANTIDAD</th>
+                <th scope="col">COSTE</th>
+                <th scope="col">ACTIVO</th>
+                <th scope="col">USUARIO</th>
+                <th scope="col">EDITAR</th>
+              </tr>
+            </thead>
+            <tbody>
+                 {%  for data_historial_lotes in data_historial_lotes %}
+                 {% if data_historial_lotes.5 == 0 and  data_historial_lotes.3 == 0 %}
+                 <tr style="display: none;">
+                  <td>{{ data_historial_lotes.1}}</td>
+                  <td>{{ data_historial_lotes.2}}</td>
+                  <td>
+                    
+                    <form action="actualiza-cantidad-lotes" method="post">
+                    <input type="number" class="form-control" value ="{{ data_historial_lotes.5}}"  id="activo" name = "activo" >
+                    <input type="hidden" class="form-control" value ="{{ data_historial_lotes.2}}"  id="fecha_vencimiento" name = "fecha_vencimiento" >
+                    <input type="hidden" class="form-control" value ="{{ data_historial_lotes.1}}"  id='sku_indivisible' name = 'sku_indivisible' >
+                    <input type="number" class="form-control custom-width"  id="cantidad" value="{{ data_historial_lotes.3}}"  name = 'cantidad'>
+                    <input type="hidden" class="form-control"  id="id" value="{{ data_historial_lotes.0}}"  name = 'id' >
+                  </td>
+                  <td>{{ data_historial_lotes.4}}</td>
+                  {% if data_historial_lotes.5 == 0 %}
+                    <td style="background-color: red;">{{ data_historial_lotes.5}}</td>
+                  {% else %}
+                    <td>{{ data_historial_lotes.5}}</td>
+                  {% endif %}
+                  <td>{{ data_historial_lotes.6}}</td>
+                  <td><button class="btn btn-primary" type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                  </svg></button></form></td>
+                </tr>
+                 {% else %}
+
+                  <tr>
+                    <td>{{ data_historial_lotes.1}}</td>
+                    <td>{{ data_historial_lotes.2}}</td>
+                    <td>
+                      <form action="actualiza-cantidad-lotes" method="post">
+                      <input type="hidden" class="form-control" value ="{{ data_historial_lotes.5}}"  id='activo' name = 'activo' >
+                      <input type="hidden" class="form-control" value ="{{ data_historial_lotes.2}}"  id="fecha_vencimiento" name = "fecha_vencimiento" >
+                      <input type="hidden" class="form-control" value ="{{ data_historial_lotes.1}}"  id='sku_indivisible' name = 'sku_indivisible' >
+                      <input type="number" class="form-control custom-width"  id="cantidad" value="{{ data_historial_lotes.3}}"  name = 'cantidad'>
+                      <input type="hidden" class="form-control"  id="id" value="{{ data_historial_lotes.0}}"  name = 'id' >
+                    </td>
+                    <td>{{ data_historial_lotes.4}}</td>
+                    {% if data_historial_lotes.5 == 0 %}
+                      <td style="background-color: red;">{{ data_historial_lotes.5}}</td>
+                    {% else %}
+                      <td>{{ data_historial_lotes.5}}</td>
+                    {% endif %}
+                    <td>{{ data_historial_lotes.6}}</td>
+                    <td><button class="btn btn-primary" type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                      <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                      <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                    </svg></button></form></td>
+                  </tr>
+                  {% endif %}
+                {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        </div>
+        </div>
+        </div>
+</div>
+
+{% endblock %}
