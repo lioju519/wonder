@@ -43,7 +43,7 @@ def login():
 
                     return redirect(url_for('inicio.panel'))
                 
-            flash("Usuario o contraseña incorrectos")
+            flash("Usuario o contraseña incorrectos por favor validar")
             return redirect(url_for('sesion.index')) 
 
                                 
