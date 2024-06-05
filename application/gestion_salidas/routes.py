@@ -142,7 +142,7 @@ def validaTablaCargue():
             if(data_2):
                 #print(x[0])
                 cursor.execute("DELETE FROM cargues WHERE order_id = %s",x[1])
-                conexion.commit()
+                #conexion.commit()
             
             else:
               print('ok')
@@ -180,12 +180,13 @@ def validaTablaCargue():
 
 @gestion_salidas.route('/ventas')
 def ventas():
+   
     conexion=obtener_conexion()
     with conexion.cursor() as cursor:
         
         cursor.execute("SELECT p.sku_indivisible, p.cantidad, c.cant_v, p.cantidad * c.cant_v as total, c.order_id, c.fecha as fecha, c.sku, p.tipo_producto, c.nombre_corto_sku, c.destinatario, c.estado FROM productos p  INNER JOIN cargues c on (p.sku_padre = c.sku)")
         data = result_set = cursor.fetchall()
-
+        
         for x in data:
             tipo_combo = x[7]
             order_id = x[4]
@@ -195,7 +196,7 @@ def ventas():
             estado_2 = x[10]
             #print(x[7])
             if(tipo_combo=='COMBO'):
-                
+                print('llega ojo combo')
                 sku_combo = x[6]
                 cantidad_vendida_combos = int(x[2])
                # print(sku_combo)
@@ -235,6 +236,8 @@ def ventas():
                     conexion.commit()
 
             else:
+
+                print('llega ojo')
                 conexion = obtener_conexion()
                 with conexion.cursor() as cursor:
                     cursor.execute('SELECT cantidad FROM inventario WHERE sku_indivisible = %s',x[0])
@@ -242,6 +245,7 @@ def ventas():
                 
                 for j in result_set:
                     total_2 = j[0] - x[3]
+                    print(total_2)
                     sku_3 = x[0]
 
                     cantidad_v = x[2]
@@ -264,7 +268,7 @@ def ventas():
                 print('entra normales')
         #dejarCero() 
         flash("CARGUE GESTIONADO CORRECTAMENTE")
-        return render_template('gestion.html')
+        return redirect(request.referrer or url_for('gestion.html'))
 
 #borrar cargue al finalizar
 @gestion_salidas.route('/borrar_cargue')
@@ -375,7 +379,7 @@ def envioC():
         pruebaCorreo()  
     
     #ojo borrar cargue sin boton es automatico  
-    borrar_cargue()
+    #borrar_cargue()
     flash('CORREOS ENVIADOS CORRECTAMENTE, TOTAL: ' + str(marca_1))
     return render_template('gestion.html')
 
@@ -808,3 +812,122 @@ def actualizaCantidadLotes():
 
     flash("Cantidad del lote actualizada corresctamente")
     return redirect(request.referrer or url_for('vistaLotes'))
+
+
+
+
+@gestion_salidas.route('/salidas-lotes')
+def salidasLotes():
+    conexion = obtener_conexion()
+
+    with conexion.cursor() as cursor:
+        cursor.execute("""
+            SELECT sku_indivisible, total_venta FROM computo_salidas
+        """)
+        data_salida = cursor.fetchall()
+
+        for x in data_salida:
+
+            total_venta = x[0]
+       
+
+        for x in data_salida:
+
+            sku_indivisible = x[0]
+            total_venta = x[1]
+            with conexion.cursor() as cursor:
+                cursor.execute("""
+                SELECT sku_indivisible, fecha_vencimiento, cantidad, precio_coste, activo, id FROM inventario_lotes WHERE sku_indivisible = %s
+                """, (sku_indivisible))
+                data_lotes = cursor.fetchall()
+            
+            
+
+
+            for j in data_lotes:
+
+                sku_indivisible = j[0]
+                fecha_vencimiento = j[1]
+                cantidad = j[2]
+                precio_coste = j[3]
+                activo = j[4]
+                id = j[5]
+
+
+            with conexion.cursor() as cursor:
+                cursor.execute("""
+                SELECT COUNT(sku_indivisible) FROM inventario_lotes WHERE sku_indivisible = %s
+                """, (sku_indivisible))
+                data_conteo_lotes = cursor.fetchall()
+
+            cantidad_sku = data_conteo_lotes[0][0]
+
+            if cantidad_sku > 1:
+                sku_multiple(sku_indivisible, total_venta, id)
+            else:
+                sku_unico()
+                
+
+
+
+    return 'hola'
+
+def sku_multiple(sku_indivisible, total_venta, id):
+    conexion = obtener_conexion()
+    
+    print(sku_indivisible, total_venta, 'multiple')
+
+    total_venta = total_venta
+
+    lista_fechas = []
+
+    while total_venta > 0:
+        
+        with conexion.cursor() as cursor:
+            cursor.execute("""
+            SELECT fecha_vencimiento, cantidad FROM inventario_lotes WHERE sku_indivisible = %s and activo = 1
+            """, (sku_indivisible))
+            fechas = cursor.fetchall()
+
+        for x in fechas:
+            fecha_vencimiento = x[0]
+            cantidad = x[1]
+
+            lista_fechas.append(fecha_vencimiento)
+        
+        fecha_menor = min(lista_fechas)
+
+        print(fecha_menor, cantidad, id)
+
+        #Si la cantidad vendida es menor a la cantidad del lote 
+        if total_venta < cantidad:
+            print(id)
+            cantidad = cantidad - total_venta
+            print(cantidad, 'ronda2', total_venta)
+            total_venta = 0
+
+            lista_fechas.remove(fecha_menor)
+            with conexion.cursor() as cursor:
+                cursor.execute('UPDATE inventario_lotes SET cantidad = %s WHERE fecha_vencimiento = %s and sku_indivisible = %s', (cantidad,fecha_menor, sku_indivisible))
+                conexion.commit()
+
+
+        else:
+            total_venta = total_venta - cantidad
+            cantidad_lote = 0
+            activo = 0
+            lista_fechas.remove(fecha_menor)
+            with conexion.cursor() as cursor:
+                cursor.execute('UPDATE inventario_lotes SET cantidad = %s, activo = %s  WHERE fecha_vencimiento = %s and sku_indivisible = %s', (cantidad_lote,activo, fecha_menor,sku_indivisible))
+                conexion.commit()
+      
+    
+    
+    return 'hola'
+    
+def sku_unico():
+
+    print('UNICO')
+
+    return 'hola'
+    
