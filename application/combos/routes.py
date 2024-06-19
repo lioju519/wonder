@@ -223,7 +223,7 @@ def combo():
             tipo_producto = 'COMBO'
             conexion=obtener_conexion()
             with conexion.cursor() as cursor:
-                cursor.execute('INSERT INTO productos (sku_indivisible, sku_padre, nombre, descripcion, tipo_producto) VALUES (%s,%s,%s,%s,%s)',(sku_combo,sku_combo,nombre_sku_combo, nombre_sku_combo ,tipo_producto))
+                cursor.execute('INSERT INTO productos (sku_indivisible, sku_padre, nombre,tipo_producto) VALUES (%s,%s,%s,%s)',(sku_combo,sku_combo,nombre_sku_combo, tipo_producto))
                 conexion.commit()
 
     
@@ -309,10 +309,10 @@ def actualizacionCombos():
 
                 #print(result_set_8[0], sku_combos)
 
-            cantidad = 1
+            cantidad_ratio = 1
 
             with conexion.cursor() as cursor:
-                cursor.execute("UPDATE productos SET peso = %s, precio = %s, cantidad = %s, fecha_caducidad = %s WHERE sku_padre = %s",(result_set_6[0], result_set_7[0], cantidad ,result_set_8[0],sku_combos))
+                cursor.execute("UPDATE productos SET peso = %s, precio = %s, cantidad = %s, fecha_caducidad = %s WHERE sku_padre = %s",(result_set_6[0], result_set_7[0], cantidad_ratio ,result_set_8[0],sku_combos))
                 conexion.commit()
 
             conexion = obtener_conexion()

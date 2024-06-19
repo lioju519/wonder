@@ -1,8 +1,9 @@
-from flask import Flask, render_template, url_for, request, make_response, redirect, Response, Blueprint,send_from_directory
+from flask import Flask, render_template, url_for, request,jsonify, json ,make_response, redirect, Response, Blueprint,send_from_directory
 from woocommerce import API
 import application
 from . import woo
 from ast import dump
+import stripe
 import datetime
 from operator import index
 from socket import IPV6_DONTFRAG
@@ -31,6 +32,7 @@ import xlwt
 import openpyxl
 from datetime import datetime
 from datetime import date
+import iop
 
 @woo.route('/integracion')
 def integra():
@@ -69,6 +71,7 @@ def sincronizaInventario():
                 if(result_set):
                     #print(sku)
                     sku_indivisible = result_set[0]
+                    print(sku_indivisible)
                     sku_padre = result_set[1]
                     relacion = int(result_set[2])
                     tipo_producto = result_set[3]
@@ -81,12 +84,20 @@ def sincronizaInventario():
                             result_set_2 = cursor.fetchone()
                             qty_bd = int(result_set_2[0])
                             
+                            if result_set_2 is not None and len(result_set_2) > 0:
+                                qty_bd = int(result_set_2[0])
+                                print("Quantity:", qty_bd)
+
+                                data = {
+                                "stock_quantity": qty_bd
+                                }
+                                wcapi.put('products/' + str(id), data).json()
+                            else:
+                                print("No results found or result_set_2 is None", sku, sku_indivisible)
+
                             #print(sku_indivisible, sku_padre, relacion , qty_bd)
 
-                            data = {
-                                "stock_quantity": qty_bd
-                            }
-                            wcapi.put('products/' + str(id), data).json()
+                            
 
                         ##### actualiza can del inventario
                     elif(relacion > 1):
@@ -96,22 +107,29 @@ def sincronizaInventario():
                             cursor.execute("SELECT cantidad  FROM inventario WHERE sku_indivisible =  %s", sku_indivisible)
                             result_set_2 = cursor.fetchone()
 
-                            qty_bd = int(result_set_2[0])
+                            if result_set_2 is not None and len(result_set_2) > 0:
+                                qty_bd = int(result_set_2[0])
+                                print("Quantity:", qty_bd)
+                                qty_bd = int(result_set_2[0])
 
-                            qty_final = qty_bd / relacion
+                                qty_final = qty_bd / relacion
+                                
+                                data = {
+                                    "stock_quantity": int(qty_final)
+                                }
+                                wcapi.put('products/' + str(id), data).json()
+
+                                #print(sku_indivisible, sku_padre,relacion , qty_bd , int(qty_final), id)
+
+                                #print(sku_indivisible, sku_padre, relacion, tipo_producto)
+                            else:
+                                print("No results found or result_set_2 is None",sku, sku_indivisible)
                             
-                            data = {
-                                "stock_quantity": int(qty_final)
-                            }
-                            wcapi.put('products/' + str(id), data).json()
-
-                            print(sku_indivisible, sku_padre,relacion , qty_bd , int(qty_final), id)
-
-                            #print(sku_indivisible, sku_padre, relacion, tipo_producto)
-                else:
-                    paila += 1
-                    #print(paila)
-                #print(sku, stock_quantity)
+                               
+                    else:
+                        paila += 1
+                        #print(paila)
+                    #print(sku, stock_quantity)
     
     return render_template('tienda.html')
 
@@ -287,6 +305,47 @@ def pedidosWonder():
 
 
 
+@woo.route('/venta', methods = ['GET', 'POST'])
+def venta():
+
+    print('se hizo una venta')
 
 
+
+    return 'venta'
+
+@woo.route('/webhookWoocomerce', methods=['POST', 'GET'])
+def webhookwoocomerce():
+    print('hola')
+
+    return 'hola'
+
+
+@woo.route('/webhook', methods=['POST', 'GET'])
+def webhook():
+    url = 'https://api.miravia.com/v2/product/get'  # URL correcta de la API de Miravia
+    appkey = '507264'
+    appSecret = 'PDVcqLbxuJriMkxltJdHUAGO9M3kgejl'
+    access_token = '50000101238q2nQzgvDkPARRfWeiq7su2ekiyh3FTtojwntRAL10ec1e2c0QJunw'  # Token de acceso válido
+
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Content-Type': 'application/json'
+    }
+    params = {
+        'product_id': '1357296984086901',
+        'seller_skus': '["TESTING_PRODUCT_DECEMBER_467d4d03-4efc-4d78-9569-78971ab02c18"]',
+        'max_created_at': '1704884033000',
+        'page_size': '10',
+        'page': '1',
+        'extraInfo_filter': '["quality_control_log"]',
+        'status': 'ALL'
+    }
+
+    response = requests.get(url, headers=headers, params=params)
+    response_data = response.json()
+
+    print(response_data)
+    return response_data
+    
 

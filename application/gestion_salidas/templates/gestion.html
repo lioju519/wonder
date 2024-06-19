@@ -9,6 +9,7 @@
 
 {% block content %} 
 
+
 {% if cargue_activo == 1 %}
 
 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -32,7 +33,7 @@
                         <tr>
                           <th scope="col">ORDER ID</th>
                           <th scope="col">SKU</th>
-                          <th scope="col">QTY_VENTA</th>
+                          <th scope="col">QYT_VENTA</th>
                           <th scope="col">NOMBRE</th>
                           <th scope="col">FECHA</th>
                         </tr>
@@ -51,7 +52,10 @@
                       </tbody>
                     </table><br><br>
                   </div>
+
+
                 </div>
+                
               </div>
             </div>
           </div>
@@ -160,6 +164,8 @@
               </table>
         
         <p> <a href="{{ url_for('gestion_salidas.ventas')}}" class="btn btn-success btn-lg" role="button">EJECUTAR SALIDAS</a> </p> 
+
+
         <p> <a href="{{ url_for('gestion_salidas.envioC')}}" class="btn btn-danger btn-lg" role="button">ENVIAR CORREOS</a> </p> 
         <p> <a href="{{ url_for('gestion_salidas.borrar_cargue')}}" class="btn btn-danger btn-lg" role="button">BORRAR TABLA CARGUES</a> </p> 
     

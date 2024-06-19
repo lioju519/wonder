@@ -70,7 +70,12 @@ def add_product():
   
         if(sku_indivisible == sku_padre):
             
+            
             tipo_producto = 'UNITARIO'
+            
+            if(int(cantidad) > int(1)):
+                tipo_producto = 'PACK'
+            
             conexion=obtener_conexion()
             with conexion.cursor() as cursor:
                 cursor.execute('SELECT sku_padre FROM productos WHERE sku_padre = %s', sku_padre)
@@ -163,8 +168,6 @@ def add_product():
                     flash("PRODUCTO CREADO CORRECTAMENTE")
             
             return redirect(url_for('inicio.panel'))
-
-
             #fecha_caducidad, coste * cantidad, impuesto, localizacion, peso * cantidad, valoracion
 
      

@@ -26,8 +26,6 @@ import xlrd
 import io
 import xlwt
 from datetime import date
-import mysql.connector
-from mysql.connector import Error
 from datetime import datetime
 
 today = str(date.today())
@@ -96,7 +94,7 @@ def download_report_2():
         sh.write(0, 5, 'relacion')
         sh.write(0, 6, 'fecha_caducidad')
         sh.write(0, 7, 'descripcion')
-        sh.write(0, 8, 'coste')
+        sh.write(0, 8, 'precio')
         sh.write(0, 9, 'tipo_producto')
         sh.write(0, 10,'localizacion')
         sh.write(0, 11,'promocion')
@@ -481,6 +479,7 @@ def grafic():
         diferencia = int(ingresos) - int(ventas)
 
     return render_template('grafico_2.html', ingresos = int(ingresos), ventas = ventas, sku = sku, fecha_1 = fecha_1, fecha_2 = fecha_2, diferencia = diferencia)
+                     
 
 
 @reportes.route('/backup_bd')
@@ -488,11 +487,9 @@ def realizar_backup():
 
     fecha = datetime.today().strftime('%Y_%m_%d_%H_%M')
 
-    respaldo = "C:\\desktop\\jorge\\respaldo_"+str(fecha)+".sql"
+    respaldo = "C:\\Users\\Supervisor\\Desktop\\respaldo_"+str(fecha)+".sql"
 
     pathBase = "C:\\xampp\\mysql\\bin\\mysqldump.exe"
-
-    archivoZip = "C:\\desktop\\jorge\\respaldo_"+str(fecha)+".sql"
 
     try:
 
@@ -504,10 +501,5 @@ def realizar_backup():
     except:
         print("paila")
         exit
-
-    
-
-
-                     
 
             

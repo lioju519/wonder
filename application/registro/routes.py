@@ -133,7 +133,6 @@ def procesaConsultaLog():
     if query:
         with conexion.cursor() as cursor:
             cursor.execute(query, params)
-            column_names = [desc[0] for desc in cursor.description]
             data = cursor.fetchall()
 
     # Si el usuario quiere exportar los datos a Excel

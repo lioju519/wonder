@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, request, make_response, redirect, Response, Blueprint,send_from_directory, session
+from flask import Flask, render_template, url_for, request, make_response, redirect, Response, Blueprint,send_from_directory
 from woocommerce import API
 import application
 from . import gestion_ingresos
@@ -28,7 +28,6 @@ import sqlite3
 import xlrd
 import io
 import xlwt
-import datetime
 
 
 #inicio
@@ -164,7 +163,7 @@ def calculaIng():
         data_calculada = dataCalculada()
         
         #ojo hacer pruebas
-        #eliminaTabla()
+        eliminaTabla()
         flash("INGRESOS CALCULADOS CORRECTAMENTE",'success')
         return render_template('ingresos.html', qty_inventario = qty_inventario, data_ingreso_antes = data_ingreso_antes, data_calculada = data_calculada)
 
@@ -383,7 +382,7 @@ def controlap():
 
             print(qty_cargue_ingreso, qty_inventario_total, qty_final)
         
-        fecha_hora_actual = datetime.datetime.now()
+        fecha_hora_actual = datetime.now()
 
         try:
             with conexion.cursor() as cursor:
@@ -446,10 +445,8 @@ def fechaVencimiento():
             # Manejo del valor 'None'
             if fecha_cargue_str and fecha_producto_str and fecha_cargue_str != '0000-00-00' and fecha_producto_str != '0000-00-00':
                 try:
-                    fecha_cargue = datetime.datetime.strptime(fecha_cargue_str, "%Y-%m-%d").date()
-                    fecha_producto = datetime.datetime.strptime(fecha_producto_str, "%Y-%m-%d").date()
-                   
-
+                    fecha_cargue = datetime.strptime(fecha_cargue_str, "%Y-%m-%d").date()
+                    fecha_producto = datetime.strptime(fecha_producto_str, "%Y-%m-%d").date()
                     print(fecha_cargue, fecha_producto)
                     if fecha_cargue > fecha_producto:
                         print(fecha_cargue, sku_indivisible, 'estos')
@@ -534,168 +531,7 @@ def proveedorP():
     return 'hola P'
 
 
-@gestion_ingresos.route('/lotes')
-def lotes():
-    conexion = obtener_conexion()
-    with conexion.cursor() as cursor:
-        cursor.execute('SELECT sku_indivisible, qty_ingreso, precio, fecha_vencimiento FROM cargue_ingresos')
-        datos_cargue_ingresos = cursor.fetchall()
 
-        for x in datos_cargue_ingresos:
+  
+    
 
-            sku_indivisible_c = x[0]
-            cantidad_c = x[1]
-            precio_coste_c = x[2]
-            fecha_vencimiento_c = x[3]
-            
-            print(fecha_vencimiento_c)
-            
-            with conexion.cursor() as cursor:
-                cursor.execute('SELECT id, sku_indivisible, fecha_vencimiento, cantidad, precio_coste FROM inventario_lotes WHERE sku_indivisible = %s and fecha_vencimiento = %s and precio_coste = %s',(sku_indivisible_c, fecha_vencimiento_c, precio_coste_c) )
-                lote_repetido = cursor.fetchall()
-                
-                if lote_repetido:
-                    print('repetido')
-                    id, sku_indivisible, fecha_vencimiento, cantidad, precio_coste = lote_repetido[0]
-                    usuario = session['usuario']
-                    # Haz lo que necesites con las variables
-                    print("SKU Indivisible:", sku_indivisible)
-                    print("Fecha de vencimiento:", fecha_vencimiento)
-                    print("Cantidad:", cantidad)
-                    print("Precio de coste:", precio_coste)
-
-                    cantidad_total_lote = int(cantidad) + int(cantidad_c)
-
-                    with conexion.cursor() as cursor:
-                        cursor.execute("UPDATE inventario_lotes SET cantidad = %s, usuario = %s WHERE id = %s", (cantidad_total_lote, usuario ,id))
-                        conexion.commit()
-                
-                else:
-                    print(' NO repetido')
-                    activo = 1
-                    usuario = session['usuario']
-
-                    with conexion.cursor() as cursor:
-                        cursor.execute("INSERT INTO inventario_lotes (sku_indivisible, fecha_vencimiento, cantidad, precio_coste, activo, usuario) VALUES (%s,%s,%s,%s,%s,%s)", (sku_indivisible_c, fecha_vencimiento_c, cantidad_c, precio_coste_c, activo,usuario))
-                        conexion.commit()
-
-
-    return 'hola'
-
-
-#Ingreso antes del cargue
-@gestion_ingresos.route('/guarda_antes_ingreso')
-def guardaAntesIngreso():
-
-    conexion = obtener_conexion()
-
-    with conexion.cursor() as cursor:
-        cursor.execute('SELECT sku_indivisible, qty_ingreso, precio, fecha_factura, fecha_recibido, fecha_vencimiento, observaciones FROM cargue_ingresos')
-        datos_cargue_ingresos = cursor.fetchall()
-
-        for j in datos_cargue_ingresos:
-
-            sku_indivisible = j[0]
-            qty_ingreso = j[1]
-            precio_cargue= j[2]
-            fecha_factura = j[3]
-            fecha_recibido = j[4]
-            fecha_vencimiento = j[5]
-            observaciones = j[6]
-            estado = 'Ingreso'
-            movimiento = 'Ingreso_Antes_cargue'
-            fecha_sistema =  datetime.datetime.now()
-            usuario = session['usuario']
-            
-            #lotes
-            with conexion.cursor() as cursor:
-                cursor.execute('SELECT sku_indivisible, fecha_vencimiento, cantidad, precio_coste, activo, usuario FROM inventario_lotes WHERE sku_indivisible = %s',(sku_indivisible))
-                datos_lotes = cursor.fetchall()
-
-            for k in datos_lotes:
-                
-                sku_indivisible_l = k[0]
-                fecha_vencimiento_l = k[1]
-                cantidad_l = k[2]
-                precio_coste_l = k[3]
-                activo_l = k[4]
-                usuario = k[5]
-
-                with conexion.cursor() as cursor:
-                    cursor.execute("INSERT INTO historial_inventario_lotes (sku_indivisible,fecha_vencimiento, cantidad, precio_coste, activo, movimiento, fecha_sistema, usuario) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", (sku_indivisible_l, fecha_vencimiento_l, cantidad_l, precio_coste_l, activo_l, movimiento, fecha_sistema,usuario))
-                    conexion.commit()
-
-
-
-            with conexion.cursor() as cursor:
-                cursor.execute("SELECT cantidad FROM inventario WHERE sku_indivisible = %s",(sku_indivisible))
-                cantidad_inventario_antes = cursor.fetchone()
-
-                cantidad_inventario= cantidad_inventario_antes[0]
-
-            with conexion.cursor() as cursor:
-                cursor.execute("SELECT precio FROM productos WHERE sku_padre = %s",(sku_indivisible))
-                precio_base = cursor.fetchone()
-
-            with conexion.cursor() as cursor:
-                cursor.execute("INSERT INTO registro_movimientos_sku (sku_indivisible,cantidad_inventario, cantidad_cargue, precio_cargue, precio_base, estado, movimiento, fecha_factura, fecha_recibido, fecha_vencimiento, observaciones, fecha_sistema, usuario ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (sku_indivisible, cantidad_inventario, qty_ingreso, precio_cargue, precio_base, estado, movimiento,fecha_factura, fecha_recibido, fecha_vencimiento,observaciones, fecha_sistema, usuario ))
-                conexion.commit()
-
-    return 'hola guarda antes ingreso'
-
-
-@gestion_ingresos.route('/guarda_despues_ingreso')
-def guardaDespuesIngreso():
-
-    conexion = obtener_conexion()
-    with conexion.cursor() as cursor:
-        cursor.execute('SELECT sku_indivisible, qty_ingreso, precio, fecha_factura, fecha_recibido, fecha_vencimiento, observaciones FROM cargue_ingresos')
-        datos_cargue_ingresos = cursor.fetchall()
-
-        for j in datos_cargue_ingresos:
-
-            sku_indivisible = j[0]
-            qty_ingreso = j[1]
-            precio_cargue = j[2]
-            fecha_factura = j[3]
-            fecha_recibido = j[4]
-            fecha_vencimiento = j[5]
-            observaciones = j[6]
-            estado = 'Ingreso'
-            movimiento = 'Ingreso_Despues_cargue'
-            fecha_sistema =  datetime.datetime.now()
-            usuario = session['usuario']
-
-            #lotes
-            with conexion.cursor() as cursor:
-                cursor.execute('SELECT sku_indivisible, fecha_vencimiento, cantidad, precio_coste, activo, usuario FROM inventario_lotes WHERE sku_indivisible = %s',(sku_indivisible))
-                datos_lotes = cursor.fetchall()
-
-            for k in datos_lotes:
-                
-                sku_indivisible_l = k[0]
-                fecha_vencimiento_l = k[1]
-                cantidad_l = k[2]
-                precio_coste_l = k[3]
-                activo_l = k[4]
-                usuario = k[5]
-
-                with conexion.cursor() as cursor:
-                    cursor.execute("INSERT INTO historial_inventario_lotes (sku_indivisible,fecha_vencimiento, cantidad, precio_coste, activo, movimiento, fecha_sistema, usuario) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", (sku_indivisible_l, fecha_vencimiento_l, cantidad_l, precio_coste_l, activo_l, movimiento, fecha_sistema,usuario))
-                    conexion.commit()
-
-            with conexion.cursor() as cursor:
-                cursor.execute("SELECT cantidad FROM inventario WHERE sku_indivisible = %s",(sku_indivisible))
-                cantidad_inventario_antes = cursor.fetchone()
-            
-            with conexion.cursor() as cursor:
-                cursor.execute("SELECT precio FROM productos WHERE sku_padre = %s",(sku_indivisible))
-                precio_base = cursor.fetchone()
-
-                cantidad_inventario= cantidad_inventario_antes[0]
-
-            with conexion.cursor() as cursor:
-                cursor.execute("INSERT INTO registro_movimientos_sku (sku_indivisible,cantidad_inventario, cantidad_cargue, precio_cargue,precio_base, estado, movimiento, fecha_factura, fecha_recibido, fecha_vencimiento, observaciones, fecha_sistema, usuario ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (sku_indivisible, cantidad_inventario, qty_ingreso, precio_cargue, precio_base,estado, movimiento,fecha_factura, fecha_recibido, fecha_vencimiento,observaciones, fecha_sistema, usuario ))
-                conexion.commit()
-
-    return 'hola guarda antes ingreso'

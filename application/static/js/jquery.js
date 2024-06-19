@@ -128,7 +128,6 @@ $(document).ready(function(){
       });
 
 
-      //Filtros gestion
       $('#sku_indivisible_filtro').hide()
       $('#sku_filtro').hide()
       $('#fecha_vencimiento_filtro').hide()
@@ -242,6 +241,11 @@ $(document).ready(function(){
         // Hacer algo con la opción seleccionada, por ejemplo, imprimir en la consola
         console.log("Opción seleccionada: " + opcionSeleccionada);
       });
+
+      //fin
+
+
+
 
 
 });
