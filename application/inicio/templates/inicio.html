@@ -1,21 +1,21 @@
+{% extends "layout.html" %} 
 {% if session['usuario'] %}
    
 {% else %}
     <script>window.location.href = "{{ url_for('sesion.login') }}";</script>
 {% endif %}
 
-{% with messages =  get_flashed_messages() %}
-{% if messages %}
-{% for message in messages %}
-    <p>{{ message }}</p>
-{% endfor %}
-{% endif %}
-{% endwith %}
-
-{% extends "layout.html" %} 
-
 {% block content %} 
-
+ <!-- Mostrar mensajes flash -->
+ <div class="flash-popup">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
 <div class="container" style="padding-top: 35px;">
     <!--<p>Bienvenid@: {{ session['usuario'] }}</p>-->
     <div class="row text-center">
@@ -70,6 +70,7 @@
                 <div class="col-lg-6">
                     <label for="floatingTextarea" class="form-label">DESCRIPCIÓN</label>
                     <textarea class="form-control" placeholder="Describe el nuevo producto" id="descripcion" name="descripcion" required></textarea>
+                    <div id="charCount" class="character-count">0/40 caracteres</div>
                 </div>
             </div>
             <div class="row">
@@ -112,6 +113,7 @@
                     <button type="submit" class="btn btn-primary btn-lg" id="btn_nuevo_produto">GUARDAR</button>
                 </div>
             </div>
+           
         </form>
     </div>
     <div id="producto_combo">

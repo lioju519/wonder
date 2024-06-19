@@ -19,29 +19,34 @@
           }
 
          
-        /* Estilos para los mensajes flash */
-        .flash {
+          .flash-message {
             padding: 10px;
             margin: 10px 0;
-            border: 1px solid #be1e1e;
+            border: 1px solid transparent;
             border-radius: 5px;
-            color:rgb(255, 255, 255);
-            text-align: center;
-            background-color: #be1e1e;
         }
 
-        /* Estilos para mensajes flash de tipo 'success' */
-        .flash.success {
-            background-color: #ff0000;
-            border-color: #c3e6cb;
-            color: #155724;
+        .flash-message.success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
         }
 
-        /* Estilos para mensajes flash de tipo 'error' */
-        .flash.error {
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
-            color: #721c24;
+        .flash-message.error {
+            color: #a94442;
+            background-color: #f2dede;
+            border-color: #ebccd1;
+        }
+
+        /* Estilo para ventana emergente (opcional) */
+        .flash-popup {
+            position: fixed;
+            top: 20px;
+            right: 800px;
+            z-index: 1000;
+            min-width: 300px;
+            max-width: 400px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         td{

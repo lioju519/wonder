@@ -1,6 +1,6 @@
 $(document).ready(function(){
 
-  $('#producto_simple').hide()
+   $('#producto_simple').hide()
   $('#producto_combo').hide()
 
   $('#btn_producto_simple').click(function(){
@@ -472,6 +472,9 @@ function nombre() {
       });
     }, false);
   })();
+
+
+
 
   
 

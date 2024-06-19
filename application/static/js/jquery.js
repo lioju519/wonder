@@ -244,9 +244,13 @@ $(document).ready(function(){
 
       //fin
 
-
-
-
+      const textarea = document.getElementById('descripcion');
+      const charCount = document.getElementById('charCount');
+    
+      textarea.addEventListener('input', () => {
+          const currentLength = textarea.value.length;
+          charCount.textContent = `${currentLength}/40 caracteres`;
+      });
 
 });
 
