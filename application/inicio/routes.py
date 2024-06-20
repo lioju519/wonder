@@ -76,9 +76,6 @@ def add_product():
             
             tipo_producto = 'UNITARIO'
             
-            if(int(cantidad) > int(1)):
-                tipo_producto = 'PACK'
-            
             conexion=obtener_conexion()
             with conexion.cursor() as cursor:
                 cursor.execute('SELECT sku_padre FROM productos WHERE sku_padre = %s', sku_padre)
