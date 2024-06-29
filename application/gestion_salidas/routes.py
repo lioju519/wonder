@@ -196,32 +196,28 @@ def ventas():
                # print(sku_combo)
                #sku_indivisibles del combo
                 with conexion.cursor() as cursor:
-                    cursor.execute('SELECT sku_indivisible FROM combos WHERE sku_combo = %s',sku_combo)
+                    cursor.execute('SELECT sku_indivisible, cantidad FROM combos WHERE sku_combo = %s',sku_combo)
                     result_set = cursor.fetchall()
                 #print(result_set)
                 for i in result_set:
 
                     #se recorren y se saca la cantidad
-                    #print(i[0])
-                    with conexion.cursor() as cursor:
-                        cursor.execute('SELECT sku_indivisible,sku_padre, cantidad FROM productos WHERE sku_padre = %s',i[0])
-                        result_set_2 = cursor.fetchone()
-                    #cantidad tabla producto
-                    cantidad_producto = int(result_set_2[2])
+                    sku_indivisible_combo = i[0]
+                    cantidad_combo = i[1]
                     #sku indivisible para restar
-                    sku_indivisible_2 = result_set_2[0]
+                    
                     with conexion.cursor() as cursor:
-                        cursor.execute('SELECT  cantidad FROM inventario WHERE sku_indivisible = %s',sku_indivisible_2)
+                        cursor.execute('SELECT  cantidad FROM inventario WHERE sku_indivisible = %s',sku_indivisible_combo)
                         result_set_3 = cursor.fetchone()
                     #cantidad inventario
                     cantidad_inventario = int(result_set_3[0])
 
-                    total = cantidad_inventario  - (cantidad_producto * cantidad_vendida_combos) 
+                    total = cantidad_inventario  - (cantidad_combo * cantidad_vendida_combos) 
 
                     #falta probar la consulta, cambiar valores de la tabla inventario
                     conexion = obtener_conexion()
                     with conexion.cursor() as cursor:
-                        cursor.execute('UPDATE inventario SET cantidad = %s WHERE sku_indivisible = %s',(total, sku_indivisible_2))
+                        cursor.execute('UPDATE inventario SET cantidad = %s WHERE sku_indivisible = %s',(total, sku_indivisible_combo))
                         conexion.commit()
                     
                 conexion = obtener_conexion()
@@ -465,7 +461,7 @@ def cal():
     ###
     conexion=obtener_conexion()
     with conexion.cursor() as cursor:
-        cursor.execute("SELECT co.sku_indivisible, SUM(c.cant_v * p.cantidad) AS total_sum FROM cargues c INNER JOIN productos p ON c.sku = p.sku_padre INNER JOIN combos co ON c.sku = co.sku_combo WHERE p.tipo_producto = 'COMBO' GROUP BY co.sku_indivisible")
+        cursor.execute("SELECT co.sku_indivisible, SUM(c.cant_v * co.cantidad) AS total_sum FROM cargues c INNER JOIN productos p ON c.sku = p.sku_padre INNER JOIN combos co ON c.sku = co.sku_combo WHERE p.tipo_producto = 'COMBO' GROUP BY co.sku_indivisible")
         data_agrupados_combos = cursor.fetchall()
 
     for y  in data_agrupados_combos:

@@ -316,9 +316,39 @@ def venta():
 
 @woo.route('/webhookWoocomerce', methods=['POST', 'GET'])
 def webhookwoocomerce():
-    print('hola')
+    if request.method == 'POST':
+        payload = request.get_data(as_text=True)
+        sig_header = request.headers.get('Stripe-Signature')
 
-    return 'hola'
+        endpoint_secret = 'sk_test_noUer6t5paCoZuvTsiNyKzEQ00GngtWEy6'  # Obtén esto desde tu panel de Stripe
+
+        try:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, endpoint_secret
+            )
+        except ValueError as e:
+            # Invalid payload
+            return jsonify(success=False, message="Invalid payload"), 400
+        except stripe.error.SignatureVerificationError as e:
+            # Invalid signature
+            return jsonify(success=False, message="Invalid signature"), 400
+
+        # Handle the event
+        if event['type'] == 'checkout.session.completed':
+            session = event['data']['object']
+            # Aquí puedes procesar los datos de la venta
+            print('Checkout Session ID:', session['id'])
+            print('Customer Email:', session['customer_email'])
+            print('Amount Total:', session['amount_total'])
+            print('Payment Status:', session['payment_status'])
+            # Agrega aquí la lógica para procesar la venta
+
+            # Puedes devolver los datos o realizar alguna otra acción
+
+        return jsonify(success=True), 200
+    elif request.method == 'GET':
+        print('hola desde webhook venta')
+        return 'hola', 200
 
 
 @woo.route('/webhook', methods=['POST', 'GET'])
@@ -349,3 +379,70 @@ def webhook():
     return response_data
     
 
+@woo.route('/claseEnvio')
+def claseEnvio():
+    # Configura la conexión a la API
+    wcapi = API(
+        url='https://wondermarket.es',
+        consumer_key='ck_b2977f45f71a91bc1a94a1c677fa1cac118a0fbe',
+        consumer_secret='cs_a2da1896983bc351e5ff476a316e78407f1b6bef',
+        wp_api=True,
+        version='wc/v3',
+        query_string_auth=True
+    )
+
+    # Obtener todas las clases de envío y mapear sus IDs a sus nombres
+    shipping_classes_response = wcapi.get("products/shipping_classes")
+    shipping_classes = shipping_classes_response.json()
+    shipping_classes_dict = {cls['id']: cls['name'] for cls in shipping_classes}
+
+    # Obtener la clase de envío 'DEFAULT'
+    default_class_id = None
+    for cls in shipping_classes:
+        if cls['name'] == 'DEFAULT':
+            default_class_id = cls['id']
+            break
+
+    if default_class_id is None:
+        return "Clase de envío 'DEFAULT' no encontrada.", 400
+
+    # Función para obtener todos los productos con paginación
+    def obtener_todos_los_productos(wcapi, per_page=100):
+        productos = []
+        pagina = 1
+        while True:
+            response = wcapi.get("products", params={"per_page": per_page, "page": pagina})
+            data = response.json()
+            if not data:
+                break
+            productos.extend(data)
+            pagina += 1
+        return productos
+
+    # Obtener todos los productos
+    productos = obtener_todos_los_productos(wcapi)
+
+    # Crear una cadena para almacenar los resultados
+    resultados = []
+
+    for product in productos:
+        product_name = product['name']
+        shipping_class_id = product.get('shipping_class_id')
+        shipping_class_name = shipping_classes_dict.get(shipping_class_id, 'No asignada')
+
+        if shipping_class_name in ['No asignada', 'Plantilla de Amazon-copia', 'Plantilla de Amazon', 'Frescos y Congelados']:
+            
+            print(product_name, shipping_class_name )
+            # Actualizar la clase de envío del producto a 'DEFAULT'
+            #update_response = wcapi.put(f"products/{product['id']}", {"shipping_class_id": default_class_id})
+            #if update_response.status_code == 200:
+                #resultado = f"Producto: {product_name} (ID: {product['id']}) actualizado a la clase de envío DEFAULT.\n"
+        else:
+            #resultado = f"Error al actualizar el producto: {product_name} (ID: {product['id']}). Detalle del error: {update_response.json()}\n"
+        #print(resultado)
+            print('hello')
+
+    # Unir todos los resultados en una sola cadena
+    resultados_str = '\n'.join(resultados)
+    
+    return resultados_str

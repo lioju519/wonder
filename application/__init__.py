@@ -16,6 +16,7 @@ from .gestion_ingresos import gestion_ingresos
 from flask_mail import Mail, Message
 from .sesion import sesion
 from .registro import registro
+from .validaciones import validaciones
 
 
 miApp = Flask(__name__)
@@ -36,6 +37,7 @@ miApp.register_blueprint(woo)
 miApp.register_blueprint(gestion_ingresos)
 miApp.register_blueprint(sesion)
 miApp.register_blueprint(registro)
+miApp.register_blueprint(validaciones)
 
 
 

@@ -171,11 +171,15 @@ def new_item(id):
 #funcion combo
 @combos.route('/combo', methods=['POST','GET'])
 def combo():
-    #lista de sku_indivisibles para crear el combo
-    #valor = request.form.getlist('field_name')
-    #sku unico del combo
-    sku_combo = request.form['sku_combo']
-    nombre_sku_combo = request.form['nombre_combo']
+    
+    recibe_sku_combo = request.form['sku_combo']
+    sku_combo = recibe_sku_combo.strip()
+
+    recibe_nombre_sku_combo = request.form['nombre_combo']
+    nombre_sku_combo = recibe_nombre_sku_combo.strip()
+
+    #sku_combo = request.form['sku_combo']
+    #nombre_sku_combo = request.form['nombre_combo']
 
     sku = request.form.getlist('sku[]')
     cantidad = request.form.getlist('cantidad[]')
@@ -223,7 +227,7 @@ def combo():
             tipo_producto = 'COMBO'
             conexion=obtener_conexion()
             with conexion.cursor() as cursor:
-                cursor.execute('INSERT INTO productos (sku_indivisible, sku_padre, nombre,tipo_producto) VALUES (%s,%s,%s,%s)',(sku_combo,sku_combo,nombre_sku_combo, tipo_producto))
+                cursor.execute('INSERT INTO productos (sku_indivisible, sku_padre, nombre,descripcion, tipo_producto) VALUES (%s,%s,%s,%s,%s)',(sku_combo,sku_combo,nombre_sku_combo,nombre_sku_combo, tipo_producto))
                 conexion.commit()
 
     
@@ -238,13 +242,17 @@ def combo():
                 sku = elemento1 
                 cantidad = elemento2
 
+                elemento1_limpio = elemento1.strip()
+                elemento2_limpio = elemento2.strip()
+
+
                 conexion = obtener_conexion()
                 with conexion.cursor() as cursor:
-                    cursor.execute("INSERT INTO combos (nombre_combo,sku_combo,sku_indivisible, cantidad) VALUES (%s,%s,%s,%s)",(nombre_sku_combo,sku_combo,elemento1, elemento2))
+                    cursor.execute("INSERT INTO combos (nombre_combo,sku_combo,sku_indivisible, cantidad) VALUES (%s,%s,%s,%s)",(nombre_sku_combo,sku_combo,elemento1_limpio, elemento2_limpio))
                     conexion.commit()
 
-                total += calculaComboPeso(elemento1,sku_combo)
-                total_precio += calculaComboPrecio(elemento1, sku_combo)
+                total += calculaComboPeso(elemento1_limpio,sku_combo)
+                total_precio += calculaComboPrecio(elemento1_limpio, sku_combo)
             
             fecha_caducidad = CalculaFecha(sku_combo)
             
